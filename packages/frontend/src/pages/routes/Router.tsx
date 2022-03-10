@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import AuthenticatedRoutes from './AuthenticatedRoutes';
 import UnauthenticatedRoutes from './UnauthenticatedRoutes';
 import { getAuth } from 'firebase/auth';
@@ -11,11 +11,22 @@ const Router: React.FC<RouterProps> = () => {
   const { authLoaded, setAuthLoaded, signedIn, setUser } = useAuth();
 
   const location = useLocation()
-  // change to  api call 
+  let path = location.pathname
+  const inviteCode = path.slice(path.indexOf("=") + 1)
+  const joinCheck = path.slice(1,5)
+  
+
+  // change to  api call
   const getUserHouseCode = () => {
-    return { data: '123456' };
+    return { data: "123456" };
   };
   const { data: code } = getUserHouseCode();
+
+  const joinHouse = () => {
+    if (localStorage.getItem('code')) {
+      console.log('user added to the house');
+    }
+  };
 
   useEffect(() => {
     // returns function to stop the listener
@@ -33,16 +44,32 @@ const Router: React.FC<RouterProps> = () => {
   }
 
   if (!signedIn) {
-    let path = location.pathname
-    // To Do: Add to House
-    // To-do: Check if user house object is empty
-    if (code === path.slice(path.indexOf("=") + 1)){
-      return <UnauthenticatedRoutes alreadyInFlat={true}/>;
+    // Route to sign-in page with stored code
+
+    if (joinCheck === "join"){
+      localStorage.setItem('code', inviteCode);
     }
-    return <UnauthenticatedRoutes alreadyInFlat={false}/>;
+    return <UnauthenticatedRoutes />;
+  }
+  
+  if (signedIn){
+    if (joinCheck === "join"){
+      if (code === null){
+        joinHouse();
+        return <AuthenticatedRoutes alreadyInFlat={false} />;
+      }
+      return <AuthenticatedRoutes alreadyInFlat={true} />;
+    }
+    else if (localStorage.getItem('code')){
+      localStorage.getItem('code')
+      console.log("HELLO")
+      joinHouse();
+      localStorage.removeItem('code')
+    }
   }
 
-  return <AuthenticatedRoutes />;
+  return <AuthenticatedRoutes alreadyInFlat={false} />;
+  
 };
 
 export default Router;
