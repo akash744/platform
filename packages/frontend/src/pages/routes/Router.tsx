@@ -18,7 +18,7 @@ const Router: React.FC<RouterProps> = () => {
 
   // change to  api call
   const getUserHouseCode = () => {
-    return { data: "123456" };
+    return { data: null };
   };
   const { data: code } = getUserHouseCode();
 
@@ -48,24 +48,36 @@ const Router: React.FC<RouterProps> = () => {
 
     if (joinCheck === "join"){
       localStorage.setItem('code', inviteCode);
+      console.log("Stored")
     }
     return <UnauthenticatedRoutes />;
   }
   
   if (signedIn){
     if (joinCheck === "join"){
-      if (code === null){
+      
+      if (localStorage.getItem('code')){
+        localStorage.getItem('code')
+        console.log("Retrieved Code")
+        if ( code === null){
+          joinHouse();
+          console.log("1.")
+        }
+        else{
+          return <AuthenticatedRoutes alreadyInFlat={true} />;
+        }
+        localStorage.removeItem('code')
+        console.log("Removed Code")
+        return <AuthenticatedRoutes alreadyInFlat={false} />;
+      }
+      else if (code === null){
         joinHouse();
+        console.log("2.")
         return <AuthenticatedRoutes alreadyInFlat={false} />;
       }
       return <AuthenticatedRoutes alreadyInFlat={true} />;
     }
-    else if (localStorage.getItem('code')){
-      localStorage.getItem('code')
-      console.log("HELLO")
-      joinHouse();
-      localStorage.removeItem('code')
-    }
+    
   }
 
   return <AuthenticatedRoutes alreadyInFlat={false} />;
